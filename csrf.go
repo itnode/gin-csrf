@@ -109,12 +109,24 @@ func Middleware(options Options) gin.HandlerFunc {
 			return
 		}
 
+		if session.Get(token) == nil {
+
+			errorFunc(c)
+			return
+
+		} else {
+
+			session.Delete(token)
+			session.Save()
+		}
+
 		c.Next()
 	}
 }
 
 // GetToken returns a CSRF token.
 func GetToken(c *gin.Context) string {
+
 	session := sessions.Default(c)
 	secret := c.MustGet(csrfSecret).(string)
 
@@ -129,6 +141,10 @@ func GetToken(c *gin.Context) string {
 		session.Save()
 	}
 	token := tokenize(secret, salt)
+
+	session.Set(csrfToken, true)
+	session.Save()
+
 	c.Set(csrfToken, token)
 
 	return token
