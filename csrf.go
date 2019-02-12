@@ -110,15 +110,12 @@ func Middleware(options Options) gin.HandlerFunc {
 		}
 
 		if session.Get(token) == nil {
-
 			errorFunc(c)
 			return
-
-		} else {
-
-			session.Delete(token)
-			session.Save()
 		}
+
+		session.Delete(token)
+		session.Save()
 
 		c.Next()
 	}
@@ -142,8 +139,12 @@ func GetToken(c *gin.Context) string {
 	}
 	token := tokenize(secret, salt)
 
-	session.Set(csrfToken, true)
-	session.Save()
+	session.Set(token, "1")
+	x := session.Save()
+
+	if x != nil {
+		panic(x)
+	}
 
 	c.Set(csrfToken, token)
 
